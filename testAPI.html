@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <link rel="icon" href="/docs/4.0/assets/img/favicons/favicon.ico" />
+
+    <title>Mon CRUD perso</title>
+
+    <link
+      rel="canonical"
+      href="https://getbootstrap.com/docs/4.0/examples/sticky-footer-navbar/"
+    />
+
+    <!-- Bootstrap core CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <link
+      href="https://getbootstrap.com/docs/4.0/examples/sticky-footer-navbar/sticky-footer-navbar.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+
+  <body>
+    <!-- Begin page content -->
+    <main role="main" class="container py-5">
+      <div class="py-5">
+        <h1>Tester notre API en JS</h1>
+      </div>
+    </main>
+
+    <!--JavaScript
+    ================================================== -->
+    <script>
+      //RECUPERER (GET) LES INFOS VIA l'API
+      //cibler l'url
+      fetch("http://localhost:8888/071025/api.php?key=12345&id=100")
+        //converti json en objet js
+        .then((res) => res.json())
+        .then(({ success, data }) => {
+          if (!success) return console.error("Erreur API ");
+          console.log("Articles dispos : ", data);
+        });
+
+      //ENVOYER LES INFOS A L'API
+
+      //cibler l'url
+      fetch("http://localhost:8888/071025/api.php?key=12345", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          titre: "Produit ajouté via API",
+          description: "ceci est un test",
+          prix: 30,
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => console.log(data))
+        .catch((error) => console.error(error));
+    </script>
+  </body>
+</html>
