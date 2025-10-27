@@ -1,0 +1,28 @@
+# IDE и системные файлы
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+__MACOSX/
+
+# Временные и резервные файлы
+*.bak
+*.tmp
+*.old
+*.log
+*.zip
+*.rar
+*.sql
+
+# Фото и загрузки
+uploads/
+*.webp
+*.png
+*.jpg
+*.jpeg
+
+# Зависимости и конфиденциальные файлы
+vendor/
+node_modules/
+.env
+config.php

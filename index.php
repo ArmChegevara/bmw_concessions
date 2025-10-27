@@ -5,7 +5,7 @@ error_reporting(E_ALL);
 
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/auth.php';
-session_start();
+
 
 // Параметр поиска (по nom/description/adresse/ville/code_postal)
 $q = trim($_GET['q'] ?? '');

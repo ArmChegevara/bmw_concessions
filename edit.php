@@ -283,7 +283,7 @@ require_once __DIR__ . '/header.php';
 
     <div class="col-12">
       <button class="btn btn-primary" type="submit">Enregistrer</button>
-      <a class="btn btn-secondary" href="concession.php?id=<?= (int)$c['id'] ?>">Annuler</a>
+      <a class="btn btn-secondary" href="index.php?id=<?= (int)$c['id'] ?>">Annuler</a>
     </div>
   </form>
 </main>

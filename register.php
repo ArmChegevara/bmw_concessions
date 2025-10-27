@@ -59,16 +59,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input class="form-control" type="email" name="email" required value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
         </div>
         <div class="col-md-6">
-            <label class="form-label">Пароль</label>
+            <label class="form-label">Mot de passe</label>
             <input class="form-control" type="password" name="password" required>
         </div>
         <div class="col-md-6">
-            <label class="form-label">Повторите пароль</label>
+            <label class="form-label">Répéter le mot de passe</label>
             <input class="form-control" type="password" name="password2" required>
         </div>
         <div class="col-12">
-            <button class="btn btn-primary" type="submit">Зарегистрироваться</button>
-            <a class="btn btn-link" href="login.php">Уже есть аккаунт? Войти</a>
+            <button class="btn btn-primary" type="submit">Registre</button>
+            <a class="btn btn-link" href="login.php">Vous avez déjà un compte ? Connectez-vous</a>
         </div>
     </form>
 </div>
