@@ -1,74 +1,71 @@
 <?php
+// auth.php — helper for auth & roles
+declare(strict_types=1);
+if (session_status() === PHP_SESSION_NONE) session_start();
+require_once __DIR__ . '/config.php'; // $pdo
 
-//Demarrer la session si elle n'est pas deja démarrée
-if (session_status() === PHP_SESSION_NONE){
-    session_start();
-}
-
-//Verifier si l'user est connecté 
-function estConnecte(){
-    return isset($_SESSION['user_id']);
-}
-
-//recup l'user connecté
-function getUtilisateur(){
-
-    //est ce que l'user est connecté?
-    if(!estConnecte()){
-        return null;
-    }
-
-    return [
-        'id' => $_SESSION['user_id'],
-        'email' => $_SESSION['user_email'],
-        'nom' => $_SESSION['user_nom'],
-        'prenom' => $_SESSION['user_prenom'],
-        'role' => $_SESSION['user_role'],
-    ];
-}
-
-//verifier si l'user est vendeur
-function estVendeur(){
-    return estConnecte() && $_SESSION['user_role'] === 'vendeur';
-}
-
-//verifier si l'user est client
-function estClient(){
-    return estConnecte() && $_SESSION['user_role'] === 'client';
-}
-
-//rediriger si non connecté
-function requireAuth(){
-     if(!estConnecte()){
-        header("Location: login.php");
-        exit;
-    }
-}
-
-//rediriger si non vendeur
-function requireVendeur(){
-    requireAuth();
-    if (!estVendeur()){
-        header("Location: index.php");
-        exit;
-    }
-}
-
-//connecter un utilisateur 
-function connecterUtilisateur($user)
+// Проверить, вошёл ли пользователь
+function estConnecte(): bool
 {
-    $_SESSION['user_id'] = $user['id'];
-    $_SESSION['user_email'] = $user['email'];
-    $_SESSION['user_nom'] = $user['nom'];
-    $_SESSION['user_prenom'] = $user['prenom'];
-    $_SESSION['user_role'] = $user['role'];
+    return !empty($_SESSION['user_id']);
 }
 
-//Deconnecter un utilisateur 
-function deconnecterUtilisateur(){
-    session_unset();
+// Получить данные текущего пользователя (ассоц. массив) или null
+function getUtilisateur(): ?array
+{
+    global $pdo;
+    if (!estConnecte()) return null;
+    $id = (int)($_SESSION['user_id']);
+    $stmt = $pdo->prepare("SELECT id, username, email, role, prenom FROM users WHERE id = ?");
+    $stmt->execute([$id]);
+    $u = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $u ?: null;
+}
+
+// Проверить роль admin
+function estAdmin(): bool
+{
+    $u = getUtilisateur();
+    return $u && ($u['role'] === 'admin');
+}
+
+// Проверить роль vendeur (в твоём проекте эквивалент admin)
+function estVendeur(): bool
+{
+    $u = getUtilisateur();
+    return $u && in_array($u['role'], ['vendeur', 'admin'], true);
+}
+function estClient(): bool
+{
+    $u = getUtilisateur();
+    return $u && $u['role'] === 'client';
+}
+
+
+
+// Авторизация по id
+function login_by_id(int $id): void
+{
+    // регистрируем в сессии
+    session_regenerate_id(true);
+    $_SESSION['user_id'] = $id;
+}
+
+// Выход
+function logout(): void
+{
+    $_SESSION = [];
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(
+            session_name(),
+            '',
+            time() - 42000,
+            $params["path"],
+            $params["domain"],
+            $params["secure"],
+            $params["httponly"]
+        );
+    }
     session_destroy();
 }
-
-
-

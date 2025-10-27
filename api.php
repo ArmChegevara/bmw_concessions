@@ -1,148 +1,150 @@
 <?php
-
-//EN TETE HTTP
-//indiquer la rép au format JSON (+ table de caractere)
+// ===== Headers / CORS =====
 header("Content-Type: application/json; charset=utf-8");
-//autoriser les requetes externes
 header("Access-Control-Allow-Origin: *");
-//on autorise que le GET
-header("Access-Control-Allow-Methods: GET, POST");
-header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-API-Key");
 
-//VERIF CLE API
+// Preflight
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
+// ===== Config / DB =====
+require 'config.php';
+
+// ===== Read JSON body (once) =====
+$rawBody = file_get_contents('php://input');
+$input = [];
+if ($rawBody !== '' && stripos($_SERVER['CONTENT_TYPE'] ?? '', 'application/json') !== false) {
+    $tmp = json_decode($rawBody, true);
+    if (is_array($tmp)) $input = $tmp;
+}
+
+// ===== API KEY =====
 $API_KEY = "12345";
+$key = $_GET['key'] ?? $_POST['key'] ?? ($input['key'] ?? null);
+$hdrAuth = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+$hdrApi  = $_SERVER['HTTP_X_API_KEY'] ?? '';
+if (!$key && $hdrApi) $key = $hdrApi;
+if (!$key && stripos($hdrAuth, 'Bearer ') === 0) $key = substr($hdrAuth, 7);
+if (!$key && stripos($hdrAuth, 'Api-Key ') === 0) $key = substr($hdrAuth, 8);
 
-$key = $_GET['key'] ??  $_POST['key'] ?? null;
-
-if ($key !== $API_KEY){
+if ($key !== $API_KEY) {
     http_response_code(403);
     echo json_encode(["success" => false, "error" => "Clé API non valide...."]);
     exit;
 }
 
-
-//connexion à la BDD
-require 'config.php';
-
-
-//Exemple A : http://localhost:8888/071025/api.php?key=12345 -> tous les articles
-//Exemple B : http://localhost:8888/071025/api.php?key=12345$id=2 -> l'article avec id 2
-//Exemple C : POST ajout d'article http://localhost:8888/071025/api.php?key=12345 + infos en post dans header
-
-
+// ===== Router =====
 $method = $_SERVER['REQUEST_METHOD'];
 
-switch ($method) {
-    case 'GET':
-        //Exemple B : un seul article
-try{
-    if(isset($_GET['id'])){
-        $id = (int) $_GET['id'];
-        $stmt = $pdo->prepare("SELECT * FROM articles WHERE id = ?");
-        $stmt->execute([$id]);
-        $article = $stmt->fetch(PDO::FETCH_ASSOC);
+try {
+    switch ($method) {
 
-        if($article){
+        case 'GET':
+            // id => одна запись, иначе — список
+            if (isset($_GET['id'])) {
+                $id = (int) $_GET['id'];
+                $stmt = $pdo->prepare("
+                    SELECT id, nom, description, date_creation, prix,
+                           latitude, longitude,
+                           contact_name, contact_email, photo,
+                           adresse, ville, code_postal
+                    FROM concessions
+                    WHERE id = ?
+                ");
+                $stmt->execute([$id]);
+                $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                if ($row) {
+                    echo json_encode(["success" => true, "data" => $row]);
+                } else {
+                    http_response_code(404);
+                    echo json_encode(["success" => false, "error" => "concession non trouvée"]);
+                }
+            } else {
+                $stmt = $pdo->query("
+                    SELECT id, nom, description, date_creation, prix,
+                           latitude, longitude,
+                           contact_name, contact_email, photo,
+                           adresse, ville, code_postal
+                    FROM concessions
+                    ORDER BY id DESC
+                ");
+                $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                echo json_encode(["success" => true, "data" => $rows]);
+            }
+            break;
+
+        case 'POST':
+            // Принимаем JSON. Делаем latitude/longitude опциональными (могут быть null)
+            $required = ['nom', 'description', 'prix', 'contact_name', 'contact_email'];
+            foreach ($required as $k) {
+                if (!isset($input[$k])) {
+                    http_response_code(400);
+                    echo json_encode(["success" => false, "error" => "Champs manquants: $k"]);
+                    exit;
+                }
+            }
+
+            $nom           = trim((string)$input['nom']);
+            $description   = trim((string)$input['description']);
+            $date_creation = isset($input['date_creation']) ? (string)$input['date_creation'] : null;
+            $prix          = (int)$input['prix'];
+            $latitude      = isset($input['latitude'])  ? (float)$input['latitude']  : null;
+            $longitude     = isset($input['longitude']) ? (float)$input['longitude'] : null;
+            $contact_name  = trim((string)$input['contact_name']);
+            $contact_email = trim((string)$input['contact_email']);
+            $photo         = isset($input['photo']) ? trim((string)$input['photo']) : null;
+
+            // адресные поля — опционально, но если пришли, запишем
+            $adresse       = isset($input['adresse'])     ? trim((string)$input['adresse'])     : null;
+            $ville         = isset($input['ville'])       ? trim((string)$input['ville'])       : null;
+            $code_postal   = isset($input['code_postal']) ? trim((string)$input['code_postal']) : null;
+
+            if ($nom === '' || $prix <= 0 || !filter_var($contact_email, FILTER_VALIDATE_EMAIL)) {
+                http_response_code(400);
+                echo json_encode(["success" => false, "error" => "Données non valides"]);
+                exit;
+            }
+
+            $stmt = $pdo->prepare("
+                INSERT INTO concessions
+                  (nom, description, date_creation, prix,
+                   latitude, longitude,
+                   contact_name, contact_email, photo,
+                   adresse, ville, code_postal)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+            ");
+            $stmt->execute([
+                $nom,
+                $description,
+                ($date_creation ?: null),
+                $prix,
+                $latitude,
+                $longitude,
+                $contact_name,
+                $contact_email,
+                $photoName,
+                $adresse,
+                $ville,
+                $code_postal,
+            ]);
+
+
             echo json_encode([
                 "success" => true,
-                "data" => $article
+                "message" => "Concession ajoutée avec succès",
+                "id" => (int)$pdo->lastInsertId()
             ]);
-        }
-        else {
-            http_response_code(404);
-            echo json_encode([
-                "success" => false,
-                "error" => "article non trouvé"
-            ]);
-        }
+            break;
 
-    } else {
-        //Exemple A : tous les article
-        $stmt = $pdo->query("SELECT * FROM articles");
-        $articles = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        //encodage en json du res
-        echo json_encode([
-                "success" => true,
-                "data" => $articles
-            ]);
-        
+        default:
+            http_response_code(405);
+            echo json_encode(["success" => false, "error" => "Méthode non autorisée"]);
     }
-}
-
-catch (PDOException $e) {
+} catch (Throwable $e) {
     http_response_code(500);
-    echo json_encode([
-                "success" => false,
-                "error" => "erreur avec la BDD : " . $e->getMessage()
-            ]);
+    echo json_encode(["success" => false, "error" => "Erreur serveur: " . $e->getMessage()]);
 }
-        break;
-
-    case 'POST':
-        //try 
-        try {
-            
-        //lecture de la requete
-        $input = json_decode(file_get_contents('php://input'), true, JSON_THROW_ON_ERROR);
-
-
-        //verifier que les champs sont ok et bien envoyés
-        if(!isset($input['titre'], $input['description'], $input['prix'])){
-            http_response_code(400);
-            echo json_encode([
-                "success" => false,
-                "error" => "Champs manquants"
-            ]); 
-            exit; 
-        }
-
-        //securise les champs + valider les champs (ex prix > 0)
-        $titre = trim($input['titre']);
-        $description = trim($input['description']);
-        $prix = (float) $input['prix'];
-        $image = null;
-
-        if($titre ==='' || $prix <= 0){
-            http_response_code(400);
-            echo json_encode([
-                "success" => false,
-                "error" => "Titre ou prix non valide"
-            ]); 
-            exit; 
-        }
-
-
-        //Inserer les donnéers de manire securisé INSERT
-      $stmt = $pdo->prepare("INSERT INTO articles (titre, description, prix, image) VALUES(?, ?, ?, ?)");
-      $stmt->execute([$titre, $description, $prix, $image]);
-
-        //renvoyer une reponse
-        echo json_encode([
-            "success" => true,
-            "message" => "Article ajouté avec succès",
-            "id" => $pdo->lastInsertId()
-        ]);
-
-        } 
-
-        //catch
-        catch (PDOException $e) {
-            http_response_code(500);
-            echo json_encode([
-                "success" => false,
-                "error" => "erreur avec la BDD : " . $e->getMessage()
-            ]);
-}
-
-        break;
-    
-
-        //empecher tout autre methode (DELETE, PUT,PATCH...)
-    default:
-        //methode nn autorisée
-        http_response_code(405);
-        echo json_encode(["success" => false, "error" => "Méthode non autorisée"]);
-        break;
-}
-

@@ -1,38 +1,51 @@
 <?php
-require 'config.php';
-require_once 'auth.php';
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
-//Verifier que l'user est connecté + qu'il a les droit (est vendeur)
-if (!estConnecte() || !estVendeur()) {
-header('Location: index.php');
-exit;
+
+session_start();
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/auth.php';   // <-- ЭТО ВАЖНО: тут лежат estAdmin()/estVendeur()
+
+// только admin или vendeur могут удалять
+if (!function_exists('estAdmin') || !function_exists('estVendeur') || (!estAdmin() && !estVendeur())) {
+    http_response_code(403);
+    exit('Accès refusé.');
 }
 
-//verifier que id est valid, numeric, le transformer en entier sinon
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])){
-    echo "Erreur : id manquant ou invalide";
+$id = (int)($_GET['id'] ?? 0);
+if ($id <= 0) {
+    http_response_code(400);
+    exit('ID manquant');
+}
+
+// CSRF токен для POST-подтверждения
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
+        http_response_code(400);
+        exit('CSRF');
+    }
+    $stmt = $pdo->prepare("DELETE FROM concessions WHERE id=?");
+    $stmt->execute([$id]);
+
+    $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Concession supprimée'];
+    header('Location: index.php');
     exit;
 }
-//recuperer l'ID et le forcer en entier
-$id = (int) $_GET['id'];
 
-//Verifier que l'article existe avec un SELECT
-$stmt = $pdo->prepare("SELECT * FROM articles WHERE id = ?");
-$stmt->execute([$id]);
-//on le stock dans une variable
-$article = $stmt->fetch();
-
-if(!$article){
-    echo "Article inexistant";
-    exit;
-}
-
-//TODO : recuperer l'img et la suppr du serveur 
-//si elle existe
-
-//Requete de suppression de l'article
-$stmt = $pdo->prepare("DELETE FROM articles WHERE id = ?");
-$stmt->execute([$id]);
-
-header("Location : index.php");
-exit;
+// GET — форма подтверждения
+require __DIR__ . '/header.php';
+?>
+<main class="container py-5">
+    <h1>Confirmer la suppression</h1>
+    <p>Voulez-vous vraiment supprimer la concession #<?= (int)$id ?> ?</p>
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+        <button class="btn btn-danger" type="submit">Supprimer</button>
+        <a class="btn btn-secondary" href="concession.php?id=<?= (int)$id ?>">Annuler</a>
+    </form>
+</main>

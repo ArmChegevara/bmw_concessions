@@ -1,80 +1,116 @@
-<?php 
+<?php
 require_once 'auth.php';
 
 ?>
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <link rel="icon" href="/docs/4.0/assets/img/favicons/favicon.ico">
 
-    <title>Mon CRUD perso</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMW FRANCE CONCESSIONS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        /* === BMW M-Power NAVBAR === */
+        .navbar-bmw {
+            position: relative;
+            background: linear-gradient(110deg,
+                    #009ADA 0%,
+                    #009ADA 25%,
+                    #13274F 25%,
+                    #13274F 50%,
+                    #E60A14 50%,
+                    #E60A14 75%,
+                    #1B1B1B 75%,
+                    #1B1B1B 100%);
+            color: #fff;
+            border-bottom: 3px solid #000;
+            transform: skewX(-12deg);
+            overflow: hidden;
+        }
 
-    <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/sticky-footer-navbar/">
+        .navbar-bmw .container-fluid {
+            transform: skewX(12deg);
+        }
 
-    <!-- Bootstrap core CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-<link href="https://getbootstrap.com/docs/4.0/examples/sticky-footer-navbar/sticky-footer-navbar.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>   
+        .navbar-bmw .navbar-brand {
+            color: #fff;
+            font-weight: 800;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-  </head>
+        .navbar-bmw img.logo {
+            height: 42px;
+            filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3));
+        }
 
-  <body>
-    <header>
-      <!-- Fixed navbar -->
-      <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        .navbar-bmw .nav-link {
+            color: #fff;
+            font-weight: 500;
+            margin-left: 15px;
+            transition: 0.3s;
+        }
+
+        .navbar-bmw .nav-link:hover {
+            color: #FFD700;
+            text-decoration: none;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-bmw">
         <div class="container-fluid">
-            <a class="navbar-brand" href="index.php">Mon CRUD</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <a class="navbar-brand" href="index.php">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/BMW.svg"
+                    alt="BMW Logo" class="logo">
+                BMW FRANCE CONCESSIONS
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navmenu">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Articles</a></li>
-                    <?php if (estVendeur()): ?>
-                        <li class="nav-item"><a class="nav-link" href="create.php">Ajouter un article</a></li>
-                    <?php endif; ?>
-                    <?php if (estClient()): ?>
+            <div class="collapse navbar-collapse justify-content-end" id="navmenu">
+                <div class="collapse navbar-collapse justify-content-end" id="navmenu">
+                    <ul class="navbar-nav align-items-center">
                         <li class="nav-item">
-                            <a class="nav-link" href="favoris.php">
-                                <i class="bi bi-heart-fill"></i> Mes favoris
-                            </a>
+                            <a class="nav-link" href="index.php">Concessions</a>
                         </li>
-                    <?php endif; ?>
-                </ul>
 
-                <ul class="navbar-nav">
-                    <?php if (estConnecte()): ?>
-                        <?php $user = getUtilisateur(); ?>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                <?= htmlspecialchars($user['prenom']) ?> <?= htmlspecialchars($user['nom']) ?>
-                                <span class="badge bg-<?= $user['role'] === 'vendeur' ? 'success' : 'primary' ?>">
-                                    <?= ucfirst($user['role']) ?>
+                        <?php if (function_exists('estAdmin') && estAdmin()): ?>
+                            <li class="nav-item">
+                                <a class="nav-link text-warning fw-bold" href="admin_dashboard.php">Administration</a>
+                            </li>
+                        <?php endif; ?>
+
+                        <?php if (function_exists('estConnecte') && estConnecte()): ?>
+                            <?php $u = getUtilisateur(); ?>
+                            <li class="nav-item">
+                                <span class="nav-link disabled text-white">
+                                    👤 <?= htmlspecialchars($u['prenom'] ?? $u['username']) ?>
+                                    <?php if (estAdmin()): ?><span class="badge bg-warning text-dark">Admin</span><?php endif; ?>
                                 </span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="profil.php">Mon profil</a></li>
-                                <?php if (estClient()): ?>
-                                    <li><a class="dropdown-item" href="favoris.php"><i class="bi bi-heart"></i> Mes favoris</a></li>
-                                <?php endif; ?>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item" href="logout.php">Déconnexion</a></li>
-                            </ul>
-                        </li>
-                    <?php else: ?>
-                        <li class="nav-item"><a class="nav-link" href="login.php">Connexion</a></li>
-                        <li class="nav-item"><a class="nav-link" href="register.php">Inscription</a></li>
-                    <?php endif; ?>
-                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-danger fw-bold" href="logout.php">Déconnexion</a>
+                            </li>
+                        <?php else: ?>
+                            <li class="nav-item"><a class="nav-link" href="login.php">Connexion</a></li>
+                            <li class="nav-item"><a class="nav-link" href="register.php">Inscription</a></li>
+                        <?php endif; ?>
+                    </ul>
+                </div>
+
             </div>
         </div>
     </nav>
+
+
     <div class="container">
-    </header>
+        </header>
