@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'api_service.dart';
 import 'add_concession_page.dart';
+import 'detail_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -101,6 +102,17 @@ class _ConcessionListPageState extends State<ConcessionListPage> {
                     title: Text(item['nom'] ?? ''),
                     subtitle: Text(item['ville'] ?? ''),
                     trailing: Text('${item['prix']} €'),
+                    onTap: () {
+                      print(
+                          "✅ Clic sur ${item['id']}"); // проверим, работает ли клик
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              DetailPage(id: int.parse(item['id'].toString())),
+                        ),
+                      );
+                    },
                   ),
                 );
               },

@@ -22,6 +22,30 @@ class ApiService {
     }
   }
 
+  static Future<List<dynamic>> getAllConcessions() async {
+    final url = Uri.parse("$baseUrl?key=$apiKey");
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success'] == true) {
+        return data['data'];
+      }
+    }
+    return [];
+  }
+
+  static Future<Map<String, dynamic>?> getConcessionById(int id) async {
+    final url = Uri.parse("$baseUrl?id=$id&key=$apiKey");
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success'] == true) {
+        return data['data'];
+      }
+    }
+    return null;
+  }
+
   // ➕ Добавление новой записи
   static Future<bool> addConcession(Map<String, dynamic> data) async {
     final response = await http.post(
