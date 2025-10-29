@@ -123,17 +123,38 @@ class _ConcessionListPageState extends State<ConcessionListPage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFFC70039), // BMW M Red 🔴
+        backgroundColor:
+            const Color(0xFF0F71BA), // 🔵 Синий BMW — для обновления
         foregroundColor: Colors.white,
         elevation: 4,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddConcessionPage()),
+        onPressed: () async {
+          setState(() {
+            _concessions =
+                ApiService.fetchConcessions(); // 🔁 заново загрузить список
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("🔄 Liste actualisée"),
+              duration: Duration(seconds: 1),
+            ),
           );
         },
-        child: const Icon(Icons.add, size: 28),
+        child: const Icon(Icons.refresh, size: 28),
       ),
+
+      // floatingActionButton: FloatingActionButton(
+      //   backgroundColor: const Color(0xFFC70039), // BMW M Red 🔴
+      //   foregroundColor: Colors.white,
+      //   elevation: 4,
+      //   onPressed: () {
+      //     Navigator.push(
+      //       context,
+      //       MaterialPageRoute(builder: (context) => const AddConcessionPage()),
+      //     );
+      //   },
+      //   child: const Icon(Icons.add, size: 28),
+      // ),
     );
   }
 }

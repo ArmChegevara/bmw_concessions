@@ -15,10 +15,10 @@ class ApiService {
       if (jsonData['success'] == true) {
         return jsonData['data'];
       } else {
-        throw Exception("Ошибка API: ${jsonData['error']}");
+        throw Exception("Erreur API: ${jsonData['error']}");
       }
     } else {
-      throw Exception("Ошибка загрузки (${response.statusCode})");
+      throw Exception("Erreur загрузки (${response.statusCode})");
     }
   }
 
