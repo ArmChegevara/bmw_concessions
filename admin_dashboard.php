@@ -9,7 +9,7 @@ require_once __DIR__ . '/header.php';
 
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-
+&
 // --- KPI
 $totalUsers   = (int)$pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
 $totalAdmins  = (int)$pdo->query("SELECT COUNT(*) FROM users WHERE role='admin'")->fetchColumn();

@@ -22,6 +22,25 @@ if ($rawBody !== '' && stripos($_SERVER['CONTENT_TYPE'] ?? '', 'application/json
     if (is_array($tmp)) $input = $tmp;
 }
 
+// ✅ Ajout pour compatibilité Flutter (multipart/form-data)
+if (empty($input) && !empty($_POST)) {
+    $input = $_POST;
+}
+
+$photoName = null;
+if (!empty($_FILES['photo']['name'])) {
+    $uploadDir = 'uploads/';
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
+    }
+    $photoName = time() . '_' . basename($_FILES['photo']['name']);
+    $targetPath = $uploadDir . $photoName;
+    if (move_uploaded_file($_FILES['photo']['tmp_name'], $targetPath)) {
+        $photoName = $targetPath;
+    }
+}
+
+
 // ===== API KEY =====
 $API_KEY = "12345";
 $key = $_GET['key'] ?? $_POST['key'] ?? ($input['key'] ?? null);
