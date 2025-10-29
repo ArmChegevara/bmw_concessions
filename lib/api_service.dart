@@ -2,12 +2,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  // ⚙️ URL сервера (замени IP на свой, если отличается)
+  // 💡 Базовый URL — только для эмулятора Android
   static const String baseUrl = "http://10.0.2.2/project3/crudphp-di25/api.php";
+  static const String apiKey = "12345";
 
-  static const String apiKey = "12345"; // ключ из твоего PHP api.php
-
-  // 📥 Чтение данных (GET)
+  // 📥 Получение всех записей
   static Future<List<dynamic>> fetchConcessions() async {
     final response = await http.get(Uri.parse("$baseUrl?key=$apiKey"));
 
@@ -23,7 +22,7 @@ class ApiService {
     }
   }
 
-  // ➕ Добавление данных (POST)
+  // ➕ Добавление новой записи
   static Future<bool> addConcession(Map<String, dynamic> data) async {
     final response = await http.post(
       Uri.parse(baseUrl),
@@ -36,5 +35,11 @@ class ApiService {
 
     final Map<String, dynamic> jsonResp = json.decode(response.body);
     return jsonResp['success'] == true;
+  }
+
+  // 📸 Получение URL фотографии
+  static String getImageUrl(String filename) {
+    if (filename.isEmpty) return '';
+    return "http://10.0.2.2/project3/crudphp-di25/uploads/$filename";
   }
 }

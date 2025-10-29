@@ -23,7 +23,49 @@ class _AddConcessionPageState extends State<AddConcessionPage> {
   File? _selectedImage;
   bool _loading = false;
 
-  // 📷 выбрать фото
+  // 📍 Проверка и запрос разрешений на геолокацию
+  Future<void> _checkLocationPermission() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("⚠️ Active la localisation sur ton appareil."),
+        ),
+      );
+      return;
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("🚫 Permission de localisation refusée."),
+          ),
+        );
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "❌ Permission de localisation bloquée dans les paramètres.",
+          ),
+        ),
+      );
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLocationPermission(); // 🔔 Проверяем разрешения при запуске страницы
+  }
+
+  // 📷 Выбор фото из галереи
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -33,7 +75,7 @@ class _AddConcessionPageState extends State<AddConcessionPage> {
     }
   }
 
-  // 📤 отправка данных
+  // 📤 Отправка данных на сервер
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
@@ -64,6 +106,7 @@ class _AddConcessionPageState extends State<AddConcessionPage> {
         ));
       }
 
+      // Отправляем запрос
       final response = await request.send();
 
       if (response.statusCode == 200) {
@@ -116,9 +159,7 @@ class _AddConcessionPageState extends State<AddConcessionPage> {
                     border: Border.all(color: Colors.grey),
                   ),
                   child: _selectedImage == null
-                      ? const Center(
-                          child: Text('📷 Choisir une photo'),
-                        )
+                      ? const Center(child: Text('📷 Choisir une photo'))
                       : ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: Image.file(

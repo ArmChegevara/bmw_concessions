@@ -8,6 +8,7 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
 
 class ConcessionListPage extends StatefulWidget {
   const ConcessionListPage({super.key});
+
   @override
   State<ConcessionListPage> createState() => _ConcessionListPageState();
 }
@@ -37,6 +39,16 @@ class _ConcessionListPageState extends State<ConcessionListPage> {
   void initState() {
     super.initState();
     _concessions = ApiService.fetchConcessions();
+  }
+
+  // ✅ Универсальная функция для подбора корректного URL фото
+  String getImageUrl(String? filename) {
+    if (filename == null || filename.isEmpty) {
+      return '';
+    }
+
+    // 📱 Эмулятор Android (MAMP)
+    return "http://10.0.2.2/project3/crudphp-di25/uploads/$filename";
   }
 
   @override
@@ -67,22 +79,22 @@ class _ConcessionListPageState extends State<ConcessionListPage> {
               itemCount: list.length,
               itemBuilder: (context, index) {
                 final item = list[index];
-                final imageUrl = item['photo'] != null &&
-                        item['photo'].isNotEmpty
-                    ? "http://10.0.2.2/project3/crudphp-di25/uploads/${item['photo']}"
-                    : null;
+                final imageUrl = getImageUrl(item['photo']);
 
                 return Card(
                   margin:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   elevation: 3,
                   child: ListTile(
-                    leading: imageUrl != null
+                    leading: imageUrl.isNotEmpty
                         ? Image.network(
                             imageUrl,
                             width: 60,
                             height: 60,
                             fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.broken_image,
+                                    color: Colors.grey),
                           )
                         : const Icon(Icons.directions_car,
                             size: 40, color: Colors.grey),
@@ -100,7 +112,7 @@ class _ConcessionListPageState extends State<ConcessionListPage> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFFC70039), // BMW M Red 🔴
-        foregroundColor: Colors.white, // цвет иконки
+        foregroundColor: Colors.white,
         elevation: 4,
         onPressed: () {
           Navigator.push(
