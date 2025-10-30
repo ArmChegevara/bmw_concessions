@@ -49,7 +49,7 @@ class _ConcessionListPageState extends State<ConcessionListPage> {
     }
 
     // 📱 Эмулятор Android (MAMP)
-    return "http://10.0.2.2/project3/crudphp-di25/uploads/$filename";
+    return "http://10.151.128.79/project3/crudphp-di25/uploads/$filename";
   }
 
   @override

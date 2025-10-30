@@ -3,7 +3,8 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   // 💡 Базовый URL — только для эмулятора Android
-  static const String baseUrl = "http://10.0.2.2/project3/crudphp-di25/api.php";
+  static const String baseUrl =
+      "http://10.151.128.79/project3/crudphp-di25/api.php";
   static const String apiKey = "12345";
 
   // 📥 Получение всех записей
@@ -64,6 +65,6 @@ class ApiService {
   // 📸 Получение URL фотографии
   static String getImageUrl(String filename) {
     if (filename.isEmpty) return '';
-    return "http://10.0.2.2/project3/crudphp-di25/uploads/$filename";
+    return "http://10.151.128.79/project3/crudphp-di25/uploads/$filename";
   }
 }

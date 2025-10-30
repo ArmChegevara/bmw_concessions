@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   static const String apiKey = '12345';
-  static const String baseUrl = 'http://10.0.2.2/ton_projet/api.php';
+  static const String baseUrl = 'http://10.151.128.79/ton_projet/api.php';
 
   static Future<List<dynamic>> fetchConcessions() async {
     final uri = Uri.parse('$baseUrl?key=$apiKey');
