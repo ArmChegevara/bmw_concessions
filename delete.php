@@ -5,9 +5,9 @@ error_reporting(E_ALL);
 
 session_start();
 require_once __DIR__ . '/config.php';
-require_once __DIR__ . '/auth.php';   // <-- ЭТО ВАЖНО: тут лежат estAdmin()/estVendeur()
+require_once __DIR__ . '/auth.php';   // <-- IMPORTANT : estAdmin()/estVendeur se trouvent ici()
 
-// только admin или vendeur могут удалять
+// Seuls l'administrateur ou le fournisseur peuvent supprimer
 if (!function_exists('estAdmin') || !function_exists('estVendeur') || (!estAdmin() && !estVendeur())) {
     http_response_code(403);
     exit('Accès refusé.');
@@ -19,7 +19,7 @@ if ($id <= 0) {
     exit('ID manquant');
 }
 
-// CSRF токен для POST-подтверждения
+// CSRF token pour la confirmation POST
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// GET — форма подтверждения
+// GET — formulaire de confirmation
 require __DIR__ . '/header.php';
 ?>
 <main class="container py-5">
