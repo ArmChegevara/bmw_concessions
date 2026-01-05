@@ -4,13 +4,13 @@ declare(strict_types=1);
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/config.php'; // $pdo
 
-// Проверить, вошёл ли пользователь
+// Vérifier si l'utilisateur est connecté
 function estConnecte(): bool
 {
     return !empty($_SESSION['user_id']);
 }
 
-// Получить данные текущего пользователя (ассоц. массив) или null
+// Récupérer les données de l'utilisateur actuel (tableau associatif) ou null
 function getUtilisateur(): ?array
 {
     global $pdo;
@@ -22,14 +22,14 @@ function getUtilisateur(): ?array
     return $u ?: null;
 }
 
-// Проверить роль admin
+// Vérifiez le rôle d'administrateur
 function estAdmin(): bool
 {
     $u = getUtilisateur();
     return $u && ($u['role'] === 'admin');
 }
 
-// Проверить роль vendeur (в твоём проекте эквивалент admin)
+// Vérifiez le rôle du fournisseur (équivalent à celui d'administrateur dans votre projet).
 function estVendeur(): bool
 {
     $u = getUtilisateur();
@@ -43,15 +43,15 @@ function estClient(): bool
 
 
 
-// Авторизация по id
+// Autorisation par identifiant
 function login_by_id(int $id): void
 {
-    // регистрируем в сессии
+    // s'inscrire à la session
     session_regenerate_id(true);
     $_SESSION['user_id'] = $id;
 }
 
-// Выход
+// Sortie
 function logout(): void
 {
     $_SESSION = [];
