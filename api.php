@@ -63,7 +63,7 @@ try {
     switch ($method) {
 
         case 'GET':
-            // id => одна запись, иначе — список
+            // id => une entrée, sinon une liste
             if (isset($_GET['id'])) {
                 $id = (int) $_GET['id'];
                 $stmt = $pdo->prepare("
@@ -97,7 +97,7 @@ try {
             break;
 
         case 'POST':
-            // Принимаем JSON. Делаем latitude/longitude опциональными (могут быть null)
+            // Accepter le format JSON. Rendre la latitude et la longitude facultatives (peuvent être nulles).
             $required = ['nom', 'description', 'prix', 'contact_name', 'contact_email'];
             foreach ($required as $k) {
                 if (!isset($input[$k])) {
@@ -117,7 +117,7 @@ try {
             $contact_email = trim((string)$input['contact_email']);
             $photo         = isset($input['photo']) ? trim((string)$input['photo']) : null;
 
-            // адресные поля — опционально, но если пришли, запишем
+            // Les champs d'adresse sont facultatifs, mais si vous les avez reçus, nous les noterons.
             $adresse       = isset($input['adresse'])     ? trim((string)$input['adresse'])     : null;
             $ville         = isset($input['ville'])       ? trim((string)$input['ville'])       : null;
             $code_postal   = isset($input['code_postal']) ? trim((string)$input['code_postal']) : null;
