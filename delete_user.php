@@ -11,12 +11,12 @@ if (!estAdmin() && !estVendeur()) {
 $id = (int)($_GET['id'] ?? 0);
 if ($id <= 0) exit('ID invalide.');
 
-// нельзя удалить самого себя
+// tu ne peux pas te supprimer toi-même
 if ($id === (int)$_SESSION['user_id']) {
     exit('<div class="container py-5 alert alert-warning">Impossible de supprimer votre propre compte.</div>');
 }
 
-// подтверждение (GET) или удаление (POST)
+// confirmation (GET) ou suppression (POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
     $stmt->execute([$id]);
