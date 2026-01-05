@@ -7,7 +7,7 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/auth.php';
 
 
-// Параметр поиска (по nom/description/adresse/ville/code_postal)
+// Paramètre de recherche (par nom/description/adresse/ville/code_postal)
 $q = trim($_GET['q'] ?? '');
 
 $sql = "
@@ -42,7 +42,7 @@ require __DIR__ . '/header.php';
     <h1 class="mt-5"><strong>BMW Concessions</strong></h1>
   <?php endif; ?>
 
-  <!-- Поиск -->
+  <!-- recherche -->
   <form class="row g-2 mb-3" method="get" action="index.php">
     <div class="col-md-6">
       <input name="q" class="form-control" placeholder="Rechercher (nom, adresse, ville...)"
@@ -121,7 +121,7 @@ require __DIR__ . '/header.php';
     </table>
   </div>
 
-  <!-- Карта под таблицей -->
+  <!-- Carte sous le tableau -->
   <div id="map" style="height:500px;"></div>
 </main>
 
@@ -132,7 +132,7 @@ require __DIR__ . '/header.php';
       attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // Если используешь api.php — он уже отдает adresse/ville/code_postal (мы поправили)
+   // Si vous utilisez api.php, il renvoie déjà adresse/ville/code_postal (nous avons corrigé cela)
     fetch('api.php?key=12345')
       .then(r => r.json())
       .then(payload => {
