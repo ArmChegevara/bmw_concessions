@@ -13,7 +13,7 @@ if ($id <= 0) {
     exit('ID invalide');
 }
 
-// Получаем данные пользователя
+// Récupération des données utilisateur
 $stmt = $pdo->prepare("SELECT id, username, email, role, prenom FROM users WHERE id = ?");
 $stmt->execute([$id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
