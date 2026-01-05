@@ -1,17 +1,17 @@
 <?php
-// 🧩 Показ ошибок
+// 🧩 Afficher les erreurs
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// ✅ Подключения
+// ✅ Relations
 require('./fpdf/fpdf.php');
 require('./config.php'); // теперь правильный путь
 
-// ✅ Получаем ID из URL
+// ✅ Récupération de l'ID à partir de l'URL
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-// ✅ SQL-запрос
+// ✅ SQL-demande
 $stmt = $pdo->prepare("SELECT * FROM concessions WHERE id = ?");
 $stmt->execute([$id]);
 $data = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -20,7 +20,7 @@ if (!$data) {
     die("Concession non trouvée !");
 }
 
-// ✅ Создание PDF
+// ✅ Création PDF
 $pdf = new FPDF();
 $pdf->AddPage();
 
@@ -56,7 +56,7 @@ if (!empty($data['photo'])) {
 }
 
 
-// Фото, если есть
+// Photos, si disponibles
 if (!empty($data['photo'])) {
     $imagePath = __DIR__ . '/uploads/' . $data['photo'];
     if (file_exists($imagePath)) {
@@ -64,5 +64,5 @@ if (!empty($data['photo'])) {
     }
 }
 
-// ✅ Отобразить PDF в браузере
+// ✅ Afficher le PDF dans le navigateur
 $pdf->Output('I', 'Concession_' . $data['nom'] . '.pdf');
