@@ -42,7 +42,7 @@ $st = $pdo->prepare($sql);
 $st->execute($params);
 $concessions = $st->fetchAll(PDO::FETCH_ASSOC);
 
-// --- CSRF для опасных действий (удаление/смена роли)
+// --- CSRF pour les actions dangereuses (retrait/changement de rôle)
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
